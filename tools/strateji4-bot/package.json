@@ -1,0 +1,13 @@
+{
+  "name": "strateji4-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Strateji 4: 10 coin Donchian topluluğu, günlük, Binance spot",
+  "scripts": {
+    "durum": "npx --yes tsx bot.ts --status",
+    "baslat": "npx --yes tsx bot.ts",
+    "bir-kez": "npx --yes tsx bot.ts --once"
+  },
+  "engines": { "node": ">=22" }
+}
