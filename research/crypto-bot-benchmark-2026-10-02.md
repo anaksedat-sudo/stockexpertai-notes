@@ -1,5 +1,15 @@
 # Crypto Bot Benchmark Raporu — 2026-10-02
 
+> ⚠️ **Düzeltme (bağımsız inceleme sonrası):** Bu raporda v02 için verilen DSR değerleri (§1'de 0,62/0,66/0,83, §8'de ort. 0,86) kodla üretilmemişti, yaklaşık hesaplanmıştı ve birbiriyle çelişiyor. Gerçek deneme sayısıyla (N=65) yeniden hesaplanan değerler **BTC 0,35 · ETH 0,72 · SOL 0,93**; N=200'de 0,24 / 0,62 / 0,89. Hiçbir coin 0,95 eşiğini geçmiyor.
+>
+> Bağımsız incelemenin diğer önemli bulguları:
+> - Kârın tamamına yakını en iyi 10 işlemden geliyor. Bu 10 işlem çıkarılınca üç coin de zararda.
+> - BTC'de 15m tetikleyici, filtreler açıkken rastgele girişten ayırt edilemiyor (%70'lik dilim).
+> - Üç coin aynı sermayeyle birlikte işlendiğinde maks. düşüş %15 değil **~%32**.
+> - Canlı motorda gerçek parayı korumasız bırakabilecek hatalar bulundu.
+>
+> Ayrıntı: `docs/crypto-bot/INDEPENDENT_REVIEW.md`.
+
 **Veri:** Binance spot 15 dakikalık mumlar, BTC/ETH/SOL, **Şubat 2021 – Eylül 2026** (5,7 yıl, coin başına ~197 bin bar).
 Veri kaynağı: [Speirsy11/crypto-dataset](https://github.com/Speirsy11/crypto-dataset) (Binance 1m'den türetilmiş). 4 saatlik barlar 15m'den birleştirildi.
 Dönem 2021 boğa, 2022 ayı, 2023–24 toparlanma ve 2025–26 piyasasını kapsıyor. Üç coinde aynı 26 veri boşluğu var (en uzunu 16,5 saat; Binance bakım kesintileriyle uyumlu).
