@@ -129,7 +129,46 @@ Alternatif olarak, internet bağlantısı varsa veri doğrudan Binance'ten de ç
 4. **Sonraki araştırma adımı:** Literatürde en güçlü kanıt günlük zaman diliminde (Zarattini). Günlük Donchian + volatilite hedefleme varyantını aynı düzenekte test edelim.
 5. **Gerçek para için asgari ölçüt:** OOS (ileriye dönük) Sharpe ≥ 0,7, DSR ≥ 0,95 ve ≥ 200 işlem. Bu ölçütlere ulaşılana kadar sadece küçük tutarla deneme.
 
-## 8. Sınırlar
+## 8. Daha akıllı iz süren stop formülleri (ek test)
+
+Tabloda 15 çıkış formülü karşılaştırılıyor; v02 aday çizgisi dahil.
+
+**Ortak ayarlar:** Hepsi v02 girişini kullanıyor (eşik 80, kısmi kâr yok). +1R'de başabaş, 48 saat kuralı ve ters sinyal çıkışı açık (13 ve 14. satırlar hariç).
+**"4h kapanışla":** İz süren seviye yalnızca 4 saatlik bar o seviyenin altında kapanınca çıkış yaptırıyor. Borsadaki sert stop başlangıç veya başabaş seviyesinde kalıyor.
+**Kod:** `ExitConfig.trailMode` (`atr` | `atr-tighten` | `donchian` | `ema`), `trailOnClose`, `trailActivationR`.
+
+| Formül | BTC Sharpe | ETH Sharpe | SOL Sharpe | Ort. Sharpe | Ort. getiri % | Ort. maks. DD % | Toplam işlem | Pozitif dönem (18'de) | Ort. DSR |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 v02: iz süren stop yok (trend dönüşüyle çık) | 0.70 | 0.95 | 1.33 | **0.99** | 113.6 | 15.5 | 455 | 13 | 0.86 |
+| 1 ATR×3, bar içi (v01 tipi) | 0.18 | 0.55 | 0.65 | **0.46** | 26.0 | 14.2 | 872 | 13 | 0.42 |
+| 2 ATR×5, bar içi | 0.28 | 0.89 | 1.19 | **0.79** | 68.6 | 15.4 | 593 | 14 | 0.70 |
+| 3 ATR×3, 4h kapanışla | 0.30 | 0.86 | 1.01 | **0.72** | 51.6 | 15.0 | 731 | 14 | 0.66 |
+| 4 ATR×5, 4h kapanışla | 0.38 | 0.87 | 1.24 | **0.83** | 78.8 | 15.1 | 535 | 14 | 0.74 |
+| 5 ATR×3, +2R sonra aktif | 0.08 | 0.60 | 0.69 | **0.45** | 26.5 | 15.3 | 795 | 12 | 0.42 |
+| 6 ATR×3, +2R sonra aktif, kapanışla | 0.27 | 0.83 | 1.03 | **0.71** | 51.1 | 15.3 | 703 | 13 | 0.65 |
+| 7 daralan ATR (5→2), kapanışla | 0.25 | 0.87 | 0.89 | **0.67** | 43.2 | 14.7 | 717 | 13 | 0.61 |
+| 8 Donchian 10 bar dibi, kapanışla | 0.22 | 0.92 | 1.07 | **0.74** | 56.3 | 14.5 | 761 | 12 | 0.67 |
+| 9 Donchian 20 bar dibi, kapanışla | 0.35 | 0.95 | 1.05 | **0.78** | 71.5 | 15.1 | 589 | 12 | 0.71 |
+| 10 Donchian 20 bar dibi, bar içi | 0.37 | 0.86 | 1.14 | **0.79** | 71.5 | 14.8 | 662 | 14 | 0.71 |
+| 11 EMA20 (4h) altı kapanış | 0.03 | 0.66 | 1.14 | **0.61** | 42.9 | 13.9 | 1190 | 13 | 0.56 |
+| 12 EMA50 (4h) altı kapanış | 0.40 | 0.81 | 1.14 | **0.78** | 70.7 | 14.8 | 743 | 15 | 0.71 |
+| 13 Donchian 20 kapanış, ters sinyal yok | 0.34 | 0.88 | 1.09 | **0.77** | 71.2 | 15.9 | 574 | 13 | 0.70 |
+| 14 EMA50 kapanış, ters sinyal yok | 0.40 | 0.81 | 1.14 | **0.78** | 70.7 | 14.8 | 743 | 15 | 0.71 |
+
+> DSR burada yaklaşık hesaplandı (önceki 59 denemenin dağılımı simüle edildi). Mutlak değerleri değil, sıralamayı esas alın.
+
+**Sonuçlar:**
+- **Hiçbir iz süren stop formülü, iz süren stop kullanmamaktan iyi değil.** v02'nin ortalama Sharpe'ı 0,99. Trend dönüş sinyali ile çıkmak (EMA20 < EMA50, kapanış EMA50 altında ve RSI < 45) zaten en iyi "iz süren çıkış" olarak çalışıyor.
+- **İz süren stop kullanılacaksa en büyük iyileştirmeler:**
+  1. Bar içi fitil yerine **4h kapanışla** tetiklemek. ATR×3'te Sharpe 0,46'dan 0,72'ye çıkıyor.
+  2. **Daha geniş mesafe.** ATR×5 ile Sharpe 0,79–0,83.
+  3. **Donchian 20 dibi** veya **4h EMA50 altı kapanış**: Sharpe 0,78–0,79.
+- **"Akıllı" görünen iki fikir işe yaramadı:**
+  - Kâr büyüdükçe stopu daraltmak: 0,67.
+  - Stopu +2R'den sonra devreye almak: bar içinde 0,45.
+- Literatürle uyumlu: dar stoplar ve kâr arttıkça daralan stoplar, trend takibinin büyük kazançlarını kesiyor.
+
+## 9. Sınırlar
 
 - Tek kaynaklı veri (GitHub'daki veri seti); Binance'in kendi arşiviyle çapraz kontrol edilmedi.
 - Coin başına ayrı hesap simüle edildi; ortak portföy (aynı sermayeyle 3 coin) simüle edilmedi.
